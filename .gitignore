@@ -2,3 +2,5 @@
 venv/
 
 pychache
+
+app.db
