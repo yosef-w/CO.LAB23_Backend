@@ -1,1 +1,4 @@
-venv
+# Ignore the virtual environment
+venv/
+
+pychache
