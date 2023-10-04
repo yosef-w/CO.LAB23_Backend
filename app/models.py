@@ -11,7 +11,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(75), nullable=False, unique=True)
     username = db.Column(db.String(75), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False)
-    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
