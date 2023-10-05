@@ -30,11 +30,11 @@ class User(db.Model, UserMixin):
     adjectives = db.Column(db.String(100))
     about = db.Column(db.String(500))
 
-    def __init__(self, first_name, last_name, email):
+    def __init__(self, first_name, last_name, email, password):
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
-        self.password = generate_password_hash('password')
+        self.password = generate_password_hash(password)
 
     def saveToDB(self):
         db.session.add(self)
@@ -44,5 +44,5 @@ class User(db.Model, UserMixin):
         db.session.delete(self)
         db.session.commit()
 
-    def __repr__(self):
-        return f"<User {self.id}|{self.username}>"
+    # def __repr__(self):
+    #     return f"<User {self.id}|{self.first_name}>"
