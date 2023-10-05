@@ -1,6 +1,8 @@
 # Ignore the virtual environment
 venv/
+my_venv
 
-pychache
-
+.env
+__pychache__
+migrations
 app.db
