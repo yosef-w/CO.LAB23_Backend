@@ -7,15 +7,16 @@ from secrets import token_hex
 db = SQLAlchemy()
 
 class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key = True)
+    uid = db.Column(db.String(50), nullable = True)
     apitoken = db.Column(db.String, unique = True)
     #username = db.Column(db.String(75), nullable=False, unique=True)
-    first_name = db.Column(db.String(50), nullable=False)
-    last_name = db.Column(db.String(50), nullable=False)
-    email = db.Column(db.String(75), nullable=False, unique=True)
-    password = db.Column(db.String(255), nullable=True)
+    first_name = db.Column(db.String(50), nullable = False)
+    last_name = db.Column(db.String(50), nullable = False)
+    email = db.Column(db.String(75), nullable = False, unique = True)
+    password = db.Column(db.String(255), nullable = True)
     country = db.Column(db.String(50))
-    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
+    date_created = db.Column(db.DateTime, nullable = False, default = datetime.utcnow())
     linkedin = db.Column(db.String(100))
     github = db.Column(db.String(100))
     #current profession role/title
