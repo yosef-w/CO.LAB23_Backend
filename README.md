@@ -1,3 +1,6 @@
+# TeamUp
+
+This is the backend API of the TeamUp app. A web application for finding early tech and design professionals to find others to collaborate with.
 
 ## API Reference
 
