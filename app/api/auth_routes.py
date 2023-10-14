@@ -98,3 +98,8 @@ def signUpAPI():
             'status': 'not ok',
             'message': 'Error creating User. Creation Unsuccessful.'
         }, 400
+    
+@api.post('/login')
+def logInAPI():
+    
+    return
