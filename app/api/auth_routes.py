@@ -87,7 +87,7 @@ def signUpAPI():
     user.saveToDB()
 
     #Check if creation was successful and the new user exists in database
-    user_check = User.query.filter_by(email)
+    user_check = User.query.filter_by(email = email).first()
     if user_check:
         return {
             'status': 'ok',
@@ -98,3 +98,8 @@ def signUpAPI():
             'status': 'not ok',
             'message': 'Error creating User. Creation Unsuccessful.'
         }, 400
+    
+@api.post('/login')
+def logInAPI():
+    
+    return
