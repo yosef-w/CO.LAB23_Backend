@@ -4,5 +4,5 @@ my_venv
 
 .env
 __pychache__
-migrations
+
 app.db

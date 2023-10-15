@@ -1,42 +1,45 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from werkzeug.security import generate_password_hash
 from flask_login import UserMixin
+from werkzeug.security import generate_password_hash
 from secrets import token_hex
+from sqlalchemy.dialects.postgresql import ARRAY
 
 db = SQLAlchemy()
 
 
 class User(db.Model, UserMixin):
+    
     id = db.Column(db.Integer, primary_key=True)
-    uid = db.Column(db.String(50), nullable=True)
+    uid = db.Column(db.String(100), nullable=True)
     apitoken = db.Column(db.String, unique=True)
     # username = db.Column(db.String(75), nullable=False, unique=True)
-    first_name = db.Column(db.String(50), nullable=False)
-    last_name = db.Column(db.String(50), nullable=False)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(75), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=True)
-    prev_role = db.Column(db.String(50))
-    prev_exp = db.Column(db.String(50))
+    prev_role = db.Column(db.String(100))
+    prev_exp = db.Column(db.String(100))
     mentor = db.Column(db.Boolean, default=False)
-    prod_role = db.Column(db.String(50))
-    prod_exp = db.Column(db.String(50))
-    adjectives = db.Column(db.String(100))
+    prod_role = db.Column(db.String(100))
+    prod_exp = db.Column(db.String(100))
+    adjectives = db.Column(ARRAY(db.String()))
     about = db.Column(db.String(500))
-    interests = db.Column(db.String(200))
-    location = db.Column(db.String(50))
-    timezone = db.Column(db.String(50))
-    hours_wk = db.Column(db.String(30))
-    availability = db.Column(db.String(50))
+    interests = db.Column(ARRAY(db.String()))
+    location = db.Column(db.String(100))
+    timezone = db.Column(db.String(100))
+    hours_wk = db.Column(db.String(100))
+    availability = db.Column(ARRAY(db.String()))
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
-    design_skills = db.Column(db.String(200))
-    developer_skills = db.Column(db.String(200))
-    management_skills = db.Column(db.String(200))
-    wanted_skills = db.Column(db.String(200))
+    design_skills = db.Column(ARRAY(db.String()))
+    developer_skills = db.Column(ARRAY(db.String()))
+    management_skills = db.Column(ARRAY(db.String()))
+    wanted_skills = db.Column(ARRAY(db.String()))
     linkedin = db.Column(db.String(100))
     github = db.Column(db.String(100))
 
     def __init__(self, first_name, last_name, email, password):
+        super().__init__()
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
@@ -56,13 +59,14 @@ class User(db.Model, UserMixin):
             "id": self.id,
             "uid": self.uid,
             "apitoken": self.apitoken,
+            "date_created": self.date_created,
             "first_name": self.first_name,
             "last_name": self.last_name,
             "email": self.email,
             "password": self.password,
             "prev_role": self.prev_role,
             "prev_exp": self.prev_exp,
-            "mentor": self.prev_exp,
+            "mentor": self.mentor,
             "prod_role": self.prod_role,
             "prod_exp": self.prod_exp,
             "adjectives": self.adjectives,
@@ -72,7 +76,6 @@ class User(db.Model, UserMixin):
             "timezone": self.timezone,
             "hours_wk": self.hours_wk,
             "availability": self.availability,
-            "date_created": self.date_created,
             "design_skills": self.design_skills,
             "developer_skills": self.developer_skills,
             "management_skills": self.management_skills,
