@@ -1,6 +1,7 @@
 from . import api
 from ..models import User
 from flask import request
+from werkzeug.security import check_password_hash
 
 #Checks to see if a user already exists. Will be called after a user either clicks sign in with Google or uses the traditional sign up method with email/password before proceeding with account creation/onboarding.
 @api.get('/checkuser/<email>')
@@ -55,7 +56,7 @@ def signUpAPI():
     if user:
         return {
             'status': 'not ok',
-            'message': 'That email already exists, please choose a different one.'
+            'message': 'A user with that email already exists. Please choose a different email to use.'
         }, 400
     
     #Creates new User instance
@@ -101,5 +102,28 @@ def signUpAPI():
     
 @api.post('/login')
 def logInAPI():
-    
-    return
+    data = request.json
+    email = data['email']
+    password = data['password']
+
+    user = User.query.filter_by(email = email).first()
+    if user:
+        #check password
+        if check_password_hash(user.password, password):
+            #if valid, give their token
+            print(user.to_dict())
+            return {
+                'status': 'ok',
+                'message': 'Login successful!',
+                'data': user.to_dict()
+            }, 201
+        else:
+            return {
+                'status': 'not ok',
+                'message': 'Incorrect password'
+            }, 400
+    else:
+        return {
+            'status': 'not ok',
+            'message': 'A user with that email does not exist.'
+        }, 400
