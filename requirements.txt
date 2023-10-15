@@ -6,7 +6,7 @@ click==8.1.7
 colorama==0.4.6
 cors==1.0.1
 filelock
-Flask==2.3.0
+Flask
 Flask-Cors==4.0.0
 Flask-Login==0.6.2
 Flask-Migrate==4.0.5
