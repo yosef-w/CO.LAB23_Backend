@@ -37,7 +37,8 @@ class User(db.Model, UserMixin):
     wanted_skills = db.Column(ARRAY(db.String()))
     linkedin = db.Column(db.String(100))
     github = db.Column(db.String(100))
-    project = db.relationship("Projects")
+    current_project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=True) # Foreign key to the project
+    current_project = db.relationship("Projects")
 
     def __init__(self, first_name, last_name, email, password):
         super().__init__()
@@ -93,7 +94,7 @@ class Projects(db.Model):
     name = db.Column(db.String(25), nullable=False)
     duration = db.Column(db.String(50))
     industries = db.Column(ARRAY(db.String()))
-    admin_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    members = db.relationship('User', back_populates='current_project') # Relationship
     admin_timezone = db.Column(db.String(50))
     description = db.Column(db.String(500))
     hours_wk = db.Column(db.String(100))
