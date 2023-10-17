@@ -9,7 +9,7 @@ db = SQLAlchemy()
 
 
 class User(db.Model, UserMixin):
-    
+
     id = db.Column(db.Integer, primary_key=True)
     uid = db.Column(db.String(100), nullable=True)
     apitoken = db.Column(db.String, unique=True)
@@ -37,6 +37,7 @@ class User(db.Model, UserMixin):
     wanted_skills = db.Column(ARRAY(db.String()))
     linkedin = db.Column(db.String(100))
     github = db.Column(db.String(100))
+    project = db.relationship("Projects")
 
     def __init__(self, first_name, last_name, email, password):
         super().__init__()
@@ -84,3 +85,37 @@ class User(db.Model, UserMixin):
 
     # def __repr__(self):
     #     return f"<User {self.id}|{self.first_name}>"
+
+
+class Projects(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True, unique=True)
+    name = db.Column(db.String(25), nullable=False)
+    duration = db.Column(db.String(50))
+    industries = db.Column(ARRAY(db.String()))
+    admin_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    admin_timezone = db.Column(db.String(50))
+    description = db.Column(db.String(500))
+    hours_wk = db.Column(db.String(100))
+    looking_for = db.Column(db.String(500))
+    complete = db.Column(db.Boolean, unique=False, default=False)
+    team_size = db.Column(db.Integer)
+    need_pm = db.Column(db.Boolean, unique=False, default=True)
+    need_designer = db.Column(db.Boolean, unique=False, default=True)
+    need_dev = db.Column(db.Boolean, unique=False, default=True)
+
+    def __init__(self, admin_id, name):
+        super().__init__()
+        self.admin_id = admin_id
+        self.name = name
+
+    def saveToDB(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def deleteFromDB(self):
+        db.session.delete(self)
+        db.session.commit()
+
+class ToDos():
+    pass

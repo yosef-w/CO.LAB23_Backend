@@ -2,6 +2,7 @@ from . import api
 from ..models import User
 from flask import request
 from werkzeug.security import check_password_hash
+from .apiauthhelper import basic_auth_required, token_auth_required, basic_auth, token_auth
 
 #Checks to see if a user already exists. Will be called after a user either clicks sign in with Google or uses the traditional sign up method with email/password before proceeding with account creation/onboarding.
 @api.get('/checkuser/<email>')
@@ -101,29 +102,12 @@ def signUpAPI():
         }, 400
     
 @api.post('/login')
+@basic_auth.login_required
 def logInAPI():
-    data = request.json
-    email = data['email']
-    password = data['password']
+    user = basic_auth.current_user()
 
-    user = User.query.filter_by(email = email).first()
-    if user:
-        #check password
-        if check_password_hash(user.password, password):
-            #if valid, give their token
-            print(user.to_dict())
-            return {
-                'status': 'ok',
-                'message': 'Login successful!',
-                'data': user.to_dict()
-            }, 201
-        else:
-            return {
-                'status': 'not ok',
-                'message': 'Incorrect password'
-            }, 400
-    else:
-        return {
-            'status': 'not ok',
-            'message': 'A user with that email does not exist.'
-        }, 400
+    return {
+            'status': 'ok',
+            'message': 'Login successful!',
+            'data': user.to_dict()
+        }, 201
