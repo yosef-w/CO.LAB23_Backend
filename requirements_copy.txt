@@ -8,7 +8,6 @@ cors==1.0.1
 filelock
 Flask
 Flask-Cors==4.0.0
-Flask-HTTPAuth==4.8.0
 Flask-Login==0.6.2
 Flask-Migrate==4.0.5
 Flask-Secrets==0.1.0
