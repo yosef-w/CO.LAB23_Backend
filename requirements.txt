@@ -12,7 +12,7 @@ Flask-HTTPAuth==4.8.0
 Flask-Login==0.6.2
 Flask-Migrate==4.0.5
 Flask-Secrets==0.1.0
-Flask-SQLAlchemy==3.1.1
+Flask-SQLAlchemy
 future==0.18.3
 gevent
 greenlet==3.0.0
