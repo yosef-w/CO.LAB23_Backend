@@ -138,7 +138,7 @@ class ToDo(db.Model):
     description = db.Column(db.String(250), nullable=False)
     notes = db.Column(db.String(500))
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False) # This creates a one-to-many relationship with Projects.
-    project = db.relationship('Projects', back_populates='todos', lazy='joined')
+    project = db.relationship('Projects', foreign_keys=[project_id], back_populates='todos', lazy='joined')
     users = db.relationship('User', secondary=todos_users, back_populates='todos', lazy='joined') # Many-to-many with User
 
     def __init__(self, project_id, description):
