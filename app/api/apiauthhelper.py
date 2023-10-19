@@ -20,6 +20,7 @@ def verify_token(token):
     if user:
         return user
 
+## The wrapper functions below each return a user argument, so your api route should accept a user argument
 def basic_auth_required(func):
     def decorated(*arg, **kwargs):
         # before
