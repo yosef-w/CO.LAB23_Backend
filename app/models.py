@@ -142,8 +142,8 @@ class ToDo(db.Model):
     users = db.relationship('User', secondary=todos_users, back_populates='todos', lazy='joined') # Many-to-many with User
 
     def __init__(self, project_id, description):
-        self.description = description
         self.project_id = project_id
+        self.description = description
     
     def saveToDB(self):
         db.session.add(self)
