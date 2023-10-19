@@ -82,7 +82,9 @@ class User(db.Model, UserMixin):
             "design_skills": self.design_skills,
             "developer_skills": self.developer_skills,
             "management_skills": self.management_skills,
-            "wanted_skills": self.wanted_skills
+            "wanted_skills": self.wanted_skills,
+            "is_admin": self.is_admin,
+            "current_project_id": self.current_project_id
         }
 
     # def __repr__(self):
@@ -122,6 +124,25 @@ class Projects(db.Model):
     def deleteFromDB(self):
         db.session.delete(self)
         db.session.commit()
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "duration": self.duration,
+            "industires": self.industries,
+            "admin_timezone": self.admin_timezone,
+            "description": self.description,
+            "hours_wk": self.hours_wk,
+            "looking_for": self.looking_for,
+            "complete": self.complete,
+            "team_size": self.team_size,
+            "need_pm": self.need_pm,
+            "need_designer": self.need_designer,
+            "need_dev": self.need_dev,
+            "date_created": self.date_created,
+            "admin_id": self.admin_id
+            }
 
 #Association table for User<->Todo many-to-many relationship
 todos_users = db.Table('todos_users',

@@ -1,5 +1,5 @@
 from . import api
-from ..models import User
+from ..models import User, Projects, ToDo
 from flask import request
 from werkzeug.security import check_password_hash
 from .apiauthhelper import basic_auth_required, token_auth_required, basic_auth, token_auth
@@ -93,7 +93,8 @@ def signUpAPI():
     if user_check:
         return {
             'status': 'ok',
-            'message': 'Account successfully created!'
+            'message': 'Account successfully created!',
+            'user': user.to_dict()
         }, 201
     else:
         return {
@@ -102,12 +103,21 @@ def signUpAPI():
         }, 400
     
 @api.post('/login')
-@basic_auth.login_required
-def logInAPI():
-    user = basic_auth.current_user()
-
-    return {
-            'status': 'ok',
-            'message': 'Login successful!',
-            'data': user.to_dict()
-        }, 201
+@token_auth_required
+def logInAPI(user):
+    # user = basic_auth.current_user()
+    user_project = Projects.query.filter_by(id=user.current_project_id).first()
+    print(user_project)
+    if user_project:
+        return {
+                'status': 'ok',
+                'message': 'Login successful!',
+                'user': user.to_dict(),
+                'project': user_project.to_dict()
+            }, 201
+    else:
+        return {
+                'status': 'ok',
+                'message': 'Login successful!',
+                'user': user.to_dict()
+            }, 201
