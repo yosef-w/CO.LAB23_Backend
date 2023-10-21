@@ -34,6 +34,7 @@ def createProject():
         project.need_dev = False
 
     project.saveToDB()
+    #Check to see if the project saved to the database successfully
     projectsaved = Projects.query.filter_by(name=project_name).first()
     if projectsaved:
         return {
@@ -78,3 +79,17 @@ def addUserToProject(user_id, project_id):
         'status': 'ok',
         'message': 'User added to project successfully'
     }, 200
+
+
+@api.get('/getteam/<int:proj_id>')
+@token_auth.login_required
+def getTeam(proj_id):
+    project = Projects.query.get(proj_id)
+
+    if project:
+        members = project.members
+        return {
+            'status': 'ok',
+            'members': [member.to_dict() for member in members],
+            'team_size': len(members)
+        }
