@@ -95,7 +95,7 @@ class Projects(db.Model):
     __tablename__ = "projects"
 
     id = db.Column(db.Integer, primary_key=True, unique=True)
-    name = db.Column(db.String(25), nullable=False)
+    name = db.Column(db.String(25), nullable=False, unique=True)
     duration = db.Column(db.String(50))
     industries = db.Column(ARRAY(db.String()))
     admin_timezone = db.Column(db.String(50))
@@ -113,9 +113,13 @@ class Projects(db.Model):
     members = db.relationship('User', foreign_keys=[User.current_project_id], back_populates="current_project", lazy='joined')
     todos = db.relationship('ToDo', back_populates= "project", cascade='all, delete, delete-orphan', lazy='joined') # One-to-many with Todo
 
-    def __init__(self, admin_id, name):
+    def __init__(self, admin_id, name, description, duration, industries, looking_for):
         self.admin_id = admin_id
         self.name = name
+        self.description = description
+        self.duration = duration
+        self.industries = industries
+        self.looking_for = looking_for
 
     def saveToDB(self):
         db.session.add(self)
