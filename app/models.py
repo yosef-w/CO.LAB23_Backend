@@ -7,6 +7,7 @@ from sqlalchemy.dialects.postgresql import ARRAY
 
 db = SQLAlchemy()
 
+
 class User(db.Model, UserMixin):
     __tablename__ = "user"
 
@@ -38,9 +39,8 @@ class User(db.Model, UserMixin):
     linkedin = db.Column(db.String(100))
     github = db.Column(db.String(100))
     is_admin = db.Column(db.Boolean, unique=False, default=False)
-    current_project_id = db.Column(db.Integer, db.ForeignKey('projects.id', use_alter=True, name='fk_user_projects'), nullable=True) # Foreign key to the project
+    current_project_id = db.Column(db.Integer, db.ForeignKey('projects.id', use_alter=True, name='fk_user_projects'), nullable=True)  # Foreign key to the project
     current_project = db.relationship("Projects", foreign_keys=[current_project_id], back_populates="members", lazy='joined')
-
 
     def __init__(self, first_name, last_name, email, password):
         self.first_name = first_name
@@ -108,10 +108,11 @@ class Projects(db.Model):
     need_designer = db.Column(db.Boolean, unique=False, default=True)
     need_dev = db.Column(db.Boolean, unique=False, default=True)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
-    admin_id = db.Column(db.Integer, db.ForeignKey("user.id", use_alter=True, name='fk_projects_user'), nullable = False)
+    admin_id = db.Column(db.Integer, db.ForeignKey("user.id", use_alter=True, name='fk_projects_user'), nullable=False)
     admin = db.relationship('User', foreign_keys=[admin_id], backref="created_projects", lazy='joined')
     members = db.relationship('User', foreign_keys=[User.current_project_id], back_populates="current_project", lazy='joined')
-    todos = db.relationship('ToDo', back_populates= "project", cascade='all, delete, delete-orphan', lazy='joined') # One-to-many with Todo
+    todos = db.relationship('ToDo', back_populates="project", cascade='all, delete, delete-orphan', lazy='joined')  # One-to-many with Todo
+    resources = db.relationship('Resources', cascade="all, delete, delete-orphan")
 
     def __init__(self, admin_id, name, description, duration, industries, looking_for):
         self.admin_id = admin_id
@@ -134,26 +135,29 @@ class Projects(db.Model):
             "id": self.id,
             "name": self.name,
             "duration": self.duration,
-            "industires": self.industries,
+            "industries": self.industries,
             "admin_timezone": self.admin_timezone,
             "description": self.description,
             "hours_wk": self.hours_wk,
             "looking_for": self.looking_for,
             "complete": self.complete,
-            "team_size": self.team_size,
+            "team_size": len(self.members),
             "need_pm": self.need_pm,
             "need_designer": self.need_designer,
             "need_dev": self.need_dev,
             "date_created": self.date_created,
-            "admin_id": self.admin_id
-            }
+            "admin_id": self.admin_id,
+            "admin_name": f'{self.admin.first_name} {self.admin.last_name}'
+        }
 
-#Association table for User<->Todo many-to-many relationship
+
+# Association table for User<->Todo many-to-many relationship
 todos_users = db.Table('todos_users',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('todo_id', db.Integer, db.ForeignKey('todo.id')),
-    db.metadata
-)
+                       db.Column('user_id', db.Integer,db.ForeignKey('user.id')),
+                       db.Column('todo_id', db.Integer,db.ForeignKey('todo.id')),
+                       db.metadata
+                       )
+
 
 class ToDo(db.Model):
     __tablename__ = "todo"
@@ -162,14 +166,15 @@ class ToDo(db.Model):
     completed = db.Column(db.Boolean, default=False)
     description = db.Column(db.String(250), nullable=False)
     notes = db.Column(db.String(500))
-    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False) # This creates a one-to-many relationship with Projects.
+    # This creates a one-to-many relationship with Projects.
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
     project = db.relationship('Projects', foreign_keys=[project_id], back_populates='todos', lazy='joined')
-    users = db.relationship('User', secondary=todos_users, back_populates='todos', lazy='joined') # Many-to-many with User
+    users = db.relationship('User', secondary=todos_users,back_populates='todos', lazy='joined')  # Many-to-many with User
 
     def __init__(self, project_id, description):
         self.project_id = project_id
         self.description = description
-    
+
     def saveToDB(self):
         db.session.add(self)
         db.session.commit()
@@ -178,5 +183,47 @@ class ToDo(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    def to_dict(self):
+        {"id": self.id,
+         "completed": self.completed,
+         "description": self.description,
+         "notes": self.notes,
+         "project_id": self.project_id
+         }
+        
+class Resources(db.Model):
+    __tablename__ = "resources"
+
+    id = db.Column(db.Integer, primary_key=True, unique=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
+    project = db.relationship("Projects", back_populates="resources")
+    title = db.Column(db.String(50))
+    content = db.Column(db.String(100))
+
+    def __init__(self, project_id, title, content):
+        self.project_id = project_id
+        self.title = title
+        self.content = content
+
+    def saveToDB(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def deleteFromDB(self):
+        db.session.delete(self)
+        db.session.commit()
+
+
+# class Meetings(db.Model):
+#     pass
+
+
+# class Links(db.Model):
+#     __tablename__ = "links" 
+
+#     id = db.Column(db.Integer, primary_key=True, unique=True)
+
+
+
 # After all model classes are defined, add the relationships that refer to later models.
-User.todos = db.relationship('ToDo', secondary=todos_users, back_populates='users', lazy='joined') # Many-to-many with Todo
+User.todos = db.relationship('ToDo', secondary=todos_users, back_populates='users', lazy='joined')  # Many-to-many with Todo

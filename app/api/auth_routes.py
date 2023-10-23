@@ -107,7 +107,7 @@ def signUpAPI():
 def logInAPI(user):
     # user = basic_auth.current_user()
     user_project = Projects.query.filter_by(id=user.current_project_id).first()
-    print(user_project)
+    
     if user_project:
         return {
                 'status': 'ok',
