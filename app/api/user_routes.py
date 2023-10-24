@@ -1,5 +1,5 @@
 from . import api
-from ..models import User, Projects
+from ..models import User, Projects, ToDo, Resources, Meetings, Links
 from flask import request
 from .apiauthhelper import token_auth
 
@@ -40,6 +40,13 @@ def createProject():
         user = User.query.get(admin_id)
         user.current_project_id = projectsaved.id
         user.saveToDB()
+
+        initial_links = ["Figma", "GitHub", "Trello", "Google Drive", "Discord/Slack", "Meeting"]
+
+        for title in initial_links:
+            new_link = Links(project_id= projectsaved.id, title=title, link="Add your link here!")
+            new_link.saveToDB()
+
         return {
             'status': 'ok',
             'message': 'Project successfully created!',
@@ -88,11 +95,13 @@ def addUserToProject(user_id, project_id):
 def removeProjectUser():
     data = request.json
 
-    project_id = data['project_id']
+    # project_id = data['project_id']
     user_id = data['user_id']
 
-    project = Projects.query.get(project_id)
+    # project = Projects.query.get(project_id)
     user = User.query.get(user_id)
+    user.current_project_id = None
+    user.savetoDB()
 
 @api.get('/getteam/<int:proj_id>')
 @token_auth.login_required

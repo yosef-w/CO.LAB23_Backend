@@ -99,7 +99,7 @@ class Projects(db.Model):
     duration = db.Column(db.String(50))
     industries = db.Column(ARRAY(db.String()))
     admin_timezone = db.Column(db.String(50))
-    description = db.Column(db.String(500))
+    description = db.Column(db.String(500), nullable=False)
     hours_wk = db.Column(db.String(100))
     looking_for = db.Column(db.String(500))
     complete = db.Column(db.Boolean, unique=False, default=False)
@@ -113,6 +113,8 @@ class Projects(db.Model):
     members = db.relationship('User', foreign_keys=[User.current_project_id], back_populates="current_project", lazy='joined')
     todos = db.relationship('ToDo', back_populates="project", cascade='all, delete, delete-orphan', lazy='joined')  # One-to-many with Todo
     resources = db.relationship('Resources', cascade="all, delete, delete-orphan")
+    meetings = db.relationship('Meetings', cascade="all, delete, delete-orphan")
+    links = db.relationship('Links', cascade="all, delete, delete-orphan")
 
     def __init__(self, admin_id, name, description, duration, industries, looking_for):
         self.admin_id = admin_id
@@ -136,7 +138,7 @@ class Projects(db.Model):
             "name": self.name,
             "duration": self.duration,
             "industries": self.industries,
-            "admin_timezone": self.admin_timezone,
+            "admin_timezone": self.admin.timezone,
             "description": self.description,
             "hours_wk": self.hours_wk,
             "looking_for": self.looking_for,
@@ -153,10 +155,10 @@ class Projects(db.Model):
 
 # Association table for User<->Todo many-to-many relationship
 todos_users = db.Table('todos_users',
-                       db.Column('user_id', db.Integer,db.ForeignKey('user.id')),
-                       db.Column('todo_id', db.Integer,db.ForeignKey('todo.id')),
-                       db.metadata
-                       )
+    db.Column('user_id', db.Integer,db.ForeignKey('user.id')),
+    db.Column('todo_id', db.Integer,db.ForeignKey('todo.id')),
+    db.metadata
+    )
 
 
 class ToDo(db.Model):
@@ -164,16 +166,17 @@ class ToDo(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, unique=True)
     completed = db.Column(db.Boolean, default=False)
-    description = db.Column(db.String(250), nullable=False)
+    title = db.Column(db.String(250), nullable=False)
     notes = db.Column(db.String(500))
+    duedate = db.Column(db.String(100))
     # This creates a one-to-many relationship with Projects.
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
     project = db.relationship('Projects', foreign_keys=[project_id], back_populates='todos', lazy='joined')
-    users = db.relationship('User', secondary=todos_users,back_populates='todos', lazy='joined')  # Many-to-many with User
+    users = db.relationship('User', secondary=todos_users, back_populates='todos', lazy='joined')  # Many-to-many with User
 
-    def __init__(self, project_id, description):
+    def __init__(self, project_id, title):
         self.project_id = project_id
-        self.description = description
+        self.title = title
 
     def saveToDB(self):
         db.session.add(self)
@@ -184,13 +187,16 @@ class ToDo(db.Model):
         db.session.commit()
 
     def to_dict(self):
-        {"id": self.id,
-         "completed": self.completed,
-         "description": self.description,
-         "notes": self.notes,
-         "project_id": self.project_id
-         }
-        
+        return {
+            "id": self.id,
+            "completed": self.completed,
+            "title": self.title,
+            "notes": self.notes,
+            "project_id": self.project_id,
+            "duedate": self.duedate
+        }
+
+
 class Resources(db.Model):
     __tablename__ = "resources"
 
@@ -213,16 +219,78 @@ class Resources(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "project_id": self.project_id,
+            "title": self.title,
+            "content": self.content
+        }
 
-# class Meetings(db.Model):
-#     pass
 
+class Meetings(db.Model):
+    __tablename__ = "meetings"
+    
+    id = db.Column(db.Integer, primary_key=True, unique=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
+    project = db.relationship("Projects", back_populates="meetings")
+    title = db.Column(db.String(250), nullable=False)
+    date = db.Column(db.String(100))
+    notes = db.Column(db.String(500))
 
-# class Links(db.Model):
-#     __tablename__ = "links" 
+    def __init__(self, project_id, title, date, notes):
+        self.project_id = project_id
+        self.title = title
+        self.date = date
+        self.notes = notes
 
-#     id = db.Column(db.Integer, primary_key=True, unique=True)
+    def saveToDB(self):
+        db.session.add(self)
+        db.session.commit()
 
+    def deleteFromDB(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "project_id": self.project_id,
+            "title": self.title,
+            "date": self.date,
+            "notes": self.notes
+        }
+    
+
+class Links(db.Model):
+    __tablename__ = "links"
+
+    id = db.Column(db.Integer, primary_key=True, unique=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
+    project = db.relationship("Projects", back_populates="links")
+    title = db.Column(db.String(250), nullable=False)
+    link = db.Column(db.String(500))
+
+    def __init__(self, project_id, title, link):
+        self.project_id = project_id
+        self.title = title
+        self.link = link
+
+    def saveToDB(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def deleteFromDB(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "project_id": self.project_id,
+            "title": self.title,
+            "link": self.link
+        }
 
 
 # After all model classes are defined, add the relationships that refer to later models.

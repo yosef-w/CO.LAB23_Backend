@@ -27,3 +27,17 @@ This is the backend API of the TeamUp app. A web application for finding early t
 | `email`      | `string` | **Required**. |
 | `password`      | `string` | **Required**. |
 
+#### Create a new project
+
+```http
+  POST /api/createproject
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `admin_id`      | `integer` | **Required**. |
+| `project_name`      | `string` | **Required**. |
+| `description`      | `string` | **Required**. |
+| `duration`      | `string` | *Optional*. |
+| `industries`      | `string` | *Optional*. |
+| `looking_for`      | `string` | *Optional*. Further description of what/who the creator is looking for |
