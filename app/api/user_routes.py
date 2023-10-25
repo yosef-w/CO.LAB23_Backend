@@ -221,3 +221,37 @@ def teamsBrowser():
         'number_of_projects': len(projects),
         'number_of_users': len(users)
     }
+
+@api.get('/getuser/<int:user_id>')
+@token_auth.login_required
+def getUser(user_id):
+    user = User.query.get(user_id)
+
+    if user:
+        return {
+            'status': 'ok',
+            'user': user.to_dict(),
+            'project_name': user.current_project.name
+        }
+    else:
+        return {
+            'status': 'not ok',
+            'message': 'User not found.'
+        }
+    
+@api.get('/getproject/<int:project_id>')
+@token_auth.login_required
+def getProject(project_id):
+    project = Projects.query.get(project_id)
+
+    if project:
+        return {
+            'status': 'ok',
+            'project': project.to_dict(),
+            'admin': project.admin.to_dict()
+        }
+    else:
+        return {
+            'status': 'not ok',
+            'message': 'Project not found.'
+        }
