@@ -180,8 +180,32 @@ def getResources():
         'status': 'ok',
         'resources': [resource.to_dict() for resource in resources],
         'links': [link.to_dict() for link in links],
-        'inspiration': [inspo.to_Dict() for inspo in inspiration]
+        'inspiration': [inspo.to_dict() for inspo in inspiration]
     }
+
+@api.post('/addmeeting')
+@token_auth.login_required
+def addMeeting():
+    data = request.json
+
+    project_id = data['project_id']
+    title = data['title']
+    date = data['date']  
+    notes = data['notes']  
+
+    try:
+        meeting = Meetings(project_id, title, date, notes)
+        meeting.saveToDB()
+        return {
+            'status': 'ok',
+            'message': 'Meeting successfully saved!'
+        }
+    except:
+        return {
+            'status': 'not ok',
+            'message': 'Meeting might not have been saved.'
+        }
+
 
     
 @api.get('/getteamsbrowser')
