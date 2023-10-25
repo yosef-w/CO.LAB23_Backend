@@ -227,11 +227,16 @@ def teamsBrowser():
 def getUser(user_id):
     user = User.query.get(user_id)
 
+    admin_name = f'{user.current_project.admin.first_name} {user.current_project.admin.last_name}'
+
     if user:
         return {
             'status': 'ok',
             'user': user.to_dict(),
-            'project_name': user.current_project.name
+            'project': {
+                "project_name": user.current_project.name,
+                "admin_name": admin_name
+                }
         }
     else:
         return {
