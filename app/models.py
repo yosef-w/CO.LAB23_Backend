@@ -115,6 +115,8 @@ class Projects(db.Model):
     resources = db.relationship('Resources', cascade="all, delete, delete-orphan")
     meetings = db.relationship('Meetings', cascade="all, delete, delete-orphan")
     links = db.relationship('Links', cascade="all, delete, delete-orphan")
+    inspiration = db.relationship('Inspiration', cascade="all, delete, delete-orphan")
+
 
     def __init__(self, admin_id, name, description, duration, industries, looking_for):
         self.admin_id = admin_id
@@ -290,6 +292,36 @@ class Links(db.Model):
             "project_id": self.project_id,
             "title": self.title,
             "link": self.link
+        }
+    
+class Inspiration(db.Model):
+    __tablename__ = "inspiration"
+
+    id = db.Column(db.Integer, primary_key=True, unique=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
+    project = db.relationship("Projects", back_populates="inspiration")
+    title = db.Column(db.String(50))
+    content = db.Column(db.String(100))
+
+    def __init__(self, project_id, title, content):
+        self.project_id = project_id
+        self.title = title
+        self.content = content
+
+    def saveToDB(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def deleteFromDB(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "project_id": self.project_id,
+            "title": self.title,
+            "content": self.content
         }
 
 

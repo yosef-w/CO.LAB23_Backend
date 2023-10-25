@@ -1,5 +1,5 @@
 from . import api
-from ..models import User, Projects, ToDo, Resources, Meetings, Links
+from ..models import User, Projects, ToDo, Resources, Meetings, Links, Inspiration
 from flask import request
 from .apiauthhelper import token_auth
 
@@ -41,11 +41,16 @@ def createProject():
         user.current_project_id = projectsaved.id
         user.saveToDB()
 
+        # Pre-poplulate some links for 'em!
         initial_links = ["Figma", "GitHub", "Trello", "Google Drive", "Discord/Slack", "Meeting"]
 
         for title in initial_links:
             new_link = Links(project_id= projectsaved.id, title=title, link="Add your link here!")
             new_link.saveToDB()
+
+        # Pre-populate sample 'Helpful Resource' and 'Inspiration' links
+        new_resource = Resources(project_id= projectsaved.id, title="Figma Tutorial", content="This is a sample resource. Add a link here!")
+        new_resource.saveToDB()
 
         return {
             'status': 'ok',
@@ -96,17 +101,65 @@ def removeProjectUser():
     data = request.json
 
     # project_id = data['project_id']
-    user_id = data['user_id']
-
     # project = Projects.query.get(project_id)
+    user_id = data['user_id']
     user = User.query.get(user_id)
+
     user.current_project_id = None
     user.savetoDB()
 
-@api.get('/getteam/<int:proj_id>')
+
+@api.post('/addtask')
 @token_auth.login_required
-def getTeam(proj_id):
-    project = Projects.query.get(proj_id)
+def addTask():
+    data = request.json
+
+    project_id = data['project_id']
+    title = data['title']
+    notes = data['notes']
+    duedate = data['duedate']
+
+    task = ToDo(project_id=project_id, title=title)
+    task.notes = notes
+    task.duedate = duedate
+
+    try:
+        task.saveToDB()
+        return {
+            'status': 'ok',
+            'message': 'Task created!'
+        }
+    except:
+        return{
+            'status': 'not ok',
+            'message': 'Task not created.'
+        }
+        
+@api.get('/gettasks/<int:project_id>')
+@token_auth.login_required
+def getTasks(project_id):
+
+    tasks = ToDo.query.filter_by(project_id=project_id).all()
+    meetings = Meetings.query.all()
+
+    if tasks or meetings:
+        return {
+            'status': 'ok',
+            'tasks': [task.to_dict() for task in tasks],
+            'meetings': [meeting.to_dict() for meeting in meetings]
+        }
+    else:
+        return {
+            'status': 'ok',
+            'message': 'The project has no tasks'
+        }
+
+
+# Gets team info for a project to display on the dashboard Your Team tab
+@api.get('/getteam/<int:project_id>')
+@token_auth.login_required
+def getTeam(project_id):
+    project = Projects.query.get(project_id)
 
     if project:
         members = project.members
@@ -115,6 +168,21 @@ def getTeam(proj_id):
             'members': [member.to_dict() for member in members],
             'team_size': len(members)
         }
+    
+@api.get('/getresources')
+@token_auth.login_required
+def getResources():
+    resources = Resources.query.all()
+    links = Links.query.all()
+    inspiration = Inspiration.query.all()
+
+    return {
+        'status': 'ok',
+        'resources': [resource.to_dict() for resource in resources],
+        'links': [link.to_dict() for link in links],
+        'inspiration': [inspo.to_Dict() for inspo in inspiration]
+    }
+
     
 @api.get('/getteamsbrowser')
 @token_auth.login_required
