@@ -206,7 +206,7 @@ class Resources(db.Model):
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
     project = db.relationship("Projects", back_populates="resources")
     title = db.Column(db.String(50))
-    content = db.Column(db.String(100))
+    content = db.Column(db.String(500))
 
     def __init__(self, project_id, title, content):
         self.project_id = project_id
@@ -301,7 +301,7 @@ class Inspiration(db.Model):
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
     project = db.relationship("Projects", back_populates="inspiration")
     title = db.Column(db.String(50))
-    content = db.Column(db.String(100))
+    content = db.Column(db.String(500))
 
     def __init__(self, project_id, title, content):
         self.project_id = project_id
