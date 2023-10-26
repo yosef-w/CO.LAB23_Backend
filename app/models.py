@@ -99,7 +99,7 @@ class Projects(db.Model):
     duration = db.Column(db.String(50))
     industries = db.Column(ARRAY(db.String()))
     admin_timezone = db.Column(db.String(50))
-    description = db.Column(db.String(500), nullable=False)
+    description = db.Column(db.String(1000), nullable=False)
     hours_wk = db.Column(db.String(100))
     looking_for = db.Column(db.String(500))
     complete = db.Column(db.Boolean, unique=False, default=False)
