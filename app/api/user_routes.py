@@ -39,6 +39,7 @@ def createProject():
     if projectsaved:
         user = User.query.get(admin_id)
         user.current_project_id = projectsaved.id
+        user.is_admin = True
         user.saveToDB()
 
         # Pre-poplulate some links for 'em!
