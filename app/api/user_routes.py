@@ -64,12 +64,16 @@ def createProject():
         }, 400
 
 
-@api.post('/add-user-to-project')
+@api.post('/addprojectuser')
 @token_auth.login_required
-def addUserToProject(user_id, project_id):
+def addProjectUser():
+    data = request.json
+
+    user_id = data['user_id']
+    project_id = data['project_id']
 
     # Query for the user and project
-    user = User.query.get(user_id).first()
+    user = User.query.get(user_id)
     project = Projects.query.get(project_id)
 
     # Check if user or project does not exist
@@ -80,7 +84,7 @@ def addUserToProject(user_id, project_id):
         }, 400
 
     # Check if the user is already part of another project
-    if user.current_project_id is not False:
+    if user.current_project_id != None:
         return {
             'status': 'not ok',
             'message': "It looks like you're already involved in another project!"
@@ -92,21 +96,24 @@ def addUserToProject(user_id, project_id):
 
     return {
         'status': 'ok',
-        'message': 'User added to project successfully'
+        'message': 'User added to project successfully',
+        'project': project.to_dict()
     }, 200
 
-@api.post('/removeprojectuser')
+@api.post('/removeprojectuser/<int:user_id>')
 @token_auth.login_required
-def removeProjectUser():
-    data = request.json
+def removeProjectUser(user_id):
 
-    # project_id = data['project_id']
-    # project = Projects.query.get(project_id)
-    user_id = data['user_id']
     user = User.query.get(user_id)
 
-    user.current_project_id = None
-    user.savetoDB()
+    if user:
+        user.current_project_id = None
+        user.saveToDB()
+        return {
+            'status': 'ok',
+            'message': "User successfully removed from project."
+        }
+        
 
 
 @api.post('/addtask')
