@@ -83,7 +83,7 @@ def addUserToProject(user_id, project_id):
     if user.current_project_id is not False:
         return {
             'status': 'not ok',
-            'message': 'User is already part of a different project.'
+            'message': "It looks like you're already involved in another project!"
         }, 400
 
     # Add user to the project
@@ -134,13 +134,41 @@ def addTask():
             'status': 'not ok',
             'message': 'Task not created.'
         }
+    
+@api.post('/deletetask/<int:task_id>')
+@token_auth.login_required
+def deleteTask(task_id):
+    task = ToDo.query.get(task_id)
+    project_id = task.project_id
+    
+    if task:
+        task.deleteFromDB()
+        tasks = ToDo.query.filter_by(project_id=project_id).all()
+        print(tasks)
+        return {
+            'status': 'ok',
+            'message': 'Task successfully deleted!',
+            'tasks': [task.to_dict() for task in tasks]
+        }
+    else:
+        return {
+            'status': 'not ok',
+            'message': "That task doesn't exist. It may have already been deleted."
+        }
         
 @api.get('/gettasks/<int:project_id>')
 @token_auth.login_required
 def getTasks(project_id):
 
     tasks = ToDo.query.filter_by(project_id=project_id).all()
-    meetings = Meetings.query.all()
+    meetings = Meetings.query.filter_by(project_id=project_id).all()
+
+    def sortItem(item):
+        return item.id
+    
+    # Sort meetings and tasks so the most recent is first
+    tasks.sort(key=sortItem, reverse=True)
+    meetings.sort(key=sortItem, reverse=True)
 
     if tasks or meetings:
         return {
@@ -205,9 +233,27 @@ def addMeeting():
             'status': 'not ok',
             'message': 'Meeting might not have been saved.'
         }
-
-
     
+@api.post('/deletemeeting/<int:meeting_id>')
+@token_auth.login_required
+def deleteMeeting(meeting_id):
+    meeting = Meetings.query.get(meeting_id)
+    project_id = meeting.project_id
+    
+    if meeting:
+        meeting.deleteFromDB()
+        meetings = Meetings.query.filter_by(project_id=project_id).all()
+        return {
+            'status': 'ok',
+            'message': 'Meeting successfully deleted!',
+            'meetings': [meeting.to_dict() for meeting in meetings]
+        }
+    else:
+        return {
+            'status': 'not ok',
+            'message': "That meeting doesn't exist. It may have already been deleted."
+        }
+
 @api.get('/getteamsbrowser')
 @token_auth.login_required
 def teamsBrowser():
@@ -227,9 +273,9 @@ def teamsBrowser():
 def getUser(user_id):
     user = User.query.get(user_id)
 
-    admin_name = f'{user.current_project.admin.first_name} {user.current_project.admin.last_name}'
 
-    if user:
+    if user.current_project_id:
+        admin_name = f'{user.current_project.admin.first_name} {user.current_project.admin.last_name}'
         return {
             'status': 'ok',
             'user': user.to_dict(),
@@ -237,6 +283,11 @@ def getUser(user_id):
                 "project_name": user.current_project.name,
                 "admin_name": admin_name
                 }
+        }
+    elif user:
+        return {
+            'status': 'ok',
+            'user': user.to_dict(),
         }
     else:
         return {
