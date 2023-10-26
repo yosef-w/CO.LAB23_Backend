@@ -277,7 +277,7 @@ def teamsBrowser():
     }
 
 @api.get('/getuser/<int:user_id>')
-@token_auth.login_required
+# @token_auth.login_required
 def getUser(user_id):
     user = User.query.get(user_id)
 
@@ -304,7 +304,7 @@ def getUser(user_id):
         }
     
 @api.get('/getproject/<int:project_id>')
-@token_auth.login_required
+# @token_auth.login_required
 def getProject(project_id):
     project = Projects.query.get(project_id)
 
