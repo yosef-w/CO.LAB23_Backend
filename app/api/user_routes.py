@@ -227,12 +227,12 @@ def getTeam(project_id):
             'team_size': len(members)
         }
     
-@api.get('/getresources')
+@api.get('/getresources/<int:project_id>')
 @token_auth.login_required
-def getResources():
-    resources = Resources.query.all()
-    links = Links.query.all()
-    inspiration = Inspiration.query.all()
+def getResources(project_id):
+    resources = Resources.query.filter_by(project_id=project_id).all()
+    links = Links.query.filter_by(project_id=project_id).all()
+    inspiration = Inspiration.query.filter_by(project_id=project_id).all()
 
     return {
         'status': 'ok',
