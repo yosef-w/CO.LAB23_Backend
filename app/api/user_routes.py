@@ -163,6 +163,28 @@ def deleteTask(task_id):
             'status': 'not ok',
             'message': "That task doesn't exist. It may have already been deleted."
         }
+    
+@api.post('/updatecompletedtask/<int:todo_id>')
+@token_auth.login_required
+def updateTask(todo_id):
+    todo = ToDo.query.get(todo_id)
+    project_id = todo.project_id
+    project_todos = ToDo.query.filter_by(project_id=project_id).all()
+
+    if todo:
+        todo.completed = True
+        todo.saveToDB()
+
+        return {
+            'status': 'ok',
+            'message': 'Task successfully marked as complete!',
+            'tasks': [task.to_dict() for task in project_todos]
+        }
+    else:
+        return {
+            'status': 'not ok',
+            'message': "Task not found. Refresh the page and try again."
+        }
         
 @api.get('/gettasks/<int:project_id>')
 @token_auth.login_required
