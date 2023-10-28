@@ -98,7 +98,9 @@ def addProjectUser():
     return {
         'status': 'ok',
         'message': 'User added to project successfully',
-        'project': project.to_dict()
+        'project': project.to_dict(),
+        #Sending back the user data as well to update current_project_id on the front end
+        'user': user.to_dict()
     }, 200
 
 @api.post('/removeprojectuser/<int:user_id>')
