@@ -17,6 +17,13 @@ def createProject():
     looking_for = data['looking_for']
     team = data['team_needed']
 
+    user = User.query.get(admin_id)
+    if user.current_project_id != None:
+        return {
+            'status': 'not ok',
+            'message': "It looks like you're already involved in a project. Leave or complete that project before starting a new one!"
+        }
+
     project = Projects.query.filter_by(name = project_name).first()
     if project:
         return {
@@ -37,7 +44,7 @@ def createProject():
     #Check to see if the project saved to the database successfully
     projectsaved = Projects.query.filter_by(name=project_name).first()
     if projectsaved:
-        user = User.query.get(admin_id)
+        ## Associate the suer with the project
         user.current_project_id = projectsaved.id
         user.is_admin = True
         user.saveToDB()
@@ -56,7 +63,8 @@ def createProject():
         return {
             'status': 'ok',
             'message': 'Project successfully created!',
-            'project': projectsaved.to_dict()
+            'project': projectsaved.to_dict(),
+            'user': user.to_dict()
         }, 200
     else:
         return {
