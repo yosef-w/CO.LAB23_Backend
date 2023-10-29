@@ -57,7 +57,7 @@ def createProject():
             new_link.saveToDB()
 
         # Pre-populate sample 'Helpful Resource' and 'Inspiration' links
-        new_resource = Resources(project_id= projectsaved.id, title="Figma Tutorial", content="This is a sample resource. Add a link here!")
+        new_resource = Resources(project_id= projectsaved.id, title="Sample Resource", content="Add a link here!")
         new_resource.saveToDB()
 
         return {
@@ -65,7 +65,7 @@ def createProject():
             'message': 'Project successfully created!',
             'project': projectsaved.to_dict(),
             'user': user.to_dict()
-        }, 200
+        }, 201
     else:
         return {
             'status': 'not ok',
@@ -146,7 +146,7 @@ def addTask():
         return {
             'status': 'ok',
             'message': 'Task created!'
-        }
+        }, 201
     except:
         return{
             'status': 'not ok',
@@ -244,12 +244,80 @@ def getResources(project_id):
     links = Links.query.filter_by(project_id=project_id).all()
     inspiration = Inspiration.query.filter_by(project_id=project_id).all()
 
+    def sortItem(item):
+        return item.id
+    
+    resources.sort(key=sortItem)
+    links.sort(key=sortItem)
+    inspiration.sort(key=sortItem)
+
     return {
         'status': 'ok',
         'resources': [resource.to_dict() for resource in resources],
         'links': [link.to_dict() for link in links],
         'inspiration': [inspo.to_dict() for inspo in inspiration]
     }
+
+@api.post('/updateresources')
+@token_auth.login_required
+def updateResources():
+    data = request.json
+
+    type = data['type']
+    resource_id = data['resource_id']
+    title = data['title']
+    content = data['content']
+
+    if type == 'links':
+        link = Links.query.get(resource_id)
+        if link:
+            link.title = title
+            link.content = content
+            link.saveToDB()
+
+            return {
+                'status': 'ok',
+                'message': 'Project Links have been updated!'
+            }, 200
+        else:
+            return {
+                'status': 'not ok',
+                'message': "That Project Link couldn't be found!"
+            }, 404
+    
+    elif type == 'resources':
+        link = Resources.query.get(resource_id)
+        if link:
+            link.title = title
+            link.content = content
+            link.saveToDB()
+
+            return {
+                'status': 'ok',
+                'message': 'Helpful Resources have been updated!'
+            }, 200
+        else:
+            return {
+                'status': 'not ok',
+                'message': "That Resource couldn't be found!"
+            }, 404
+
+    elif type == 'inspiration':
+        link = Inspiration.query.get(resource_id)
+        if link:
+            link.title = title
+            link.content = content
+            link.saveToDB()
+
+            return {
+                'status': 'ok',
+                'message': 'Inspirations have been updated!'
+            }, 200
+        else:
+            return {
+                'status': 'not ok',
+                'message': "That Inspiration couldn't be found!"
+            }, 404
 
 @api.post('/addmeeting')
 @token_auth.login_required

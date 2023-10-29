@@ -271,12 +271,12 @@ class Links(db.Model):
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
     project = db.relationship("Projects", back_populates="links")
     title = db.Column(db.String(250), nullable=False)
-    link = db.Column(db.String(500))
+    content = db.Column(db.String(500))
 
-    def __init__(self, project_id, title, link):
+    def __init__(self, project_id, title, content):
         self.project_id = project_id
         self.title = title
-        self.link = link
+        self.link = content
 
     def saveToDB(self):
         db.session.add(self)
@@ -291,7 +291,7 @@ class Links(db.Model):
             "id": self.id,
             "project_id": self.project_id,
             "title": self.title,
-            "link": self.link
+            "content": self.content
         }
     
 class Inspiration(db.Model):
