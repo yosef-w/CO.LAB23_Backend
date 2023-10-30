@@ -237,6 +237,58 @@ def getTeam(project_id):
             'team_size': len(members)
         }
     
+@api.post('/createresource')
+@token_auth.login_required
+def createResource():
+    data = request.json
+
+    project_id = data['project_id']
+    type = data['type']
+    title = data['title']
+    content = data['content']
+
+    if type == 'Project Link':
+        try:
+            link = Links(project_id=project_id, title=title, content=content)
+            link.saveToDB()
+            return {
+                'status': 'ok',
+                'message': 'New Project Link successfully saved!'
+            }
+        except:
+            return {
+                'status': 'not ok',
+                'message': "New Project Link couldn't be saved!"
+            }
+        
+    elif type == 'Helpful Resource':
+        try:
+            link = Resources(project_id=project_id, title=title, content=content)
+            link.saveToDB()
+            return {
+                'status': 'ok',
+                'message': 'New Helpful Resource successfully saved!'
+            }
+        except:
+            return {
+                'status': 'not ok',
+                'message': "New Helpful Resource couldn't be saved!"
+            }
+        
+    elif type == 'Inspiration':
+        try:
+            link = Inspiration(project_id=project_id, title=title, content=content)
+            link.saveToDB()
+            return {
+                'status': 'ok',
+                'message': 'New Inspiration successfully saved!'
+            }
+        except:
+            return {
+                'status': 'not ok',
+                'message': "New Inspiration couldn't be saved!"
+            }
+    
 @api.get('/getresources/<int:project_id>')
 @token_auth.login_required
 def getResources(project_id):
@@ -318,6 +370,59 @@ def updateResources():
                 'status': 'not ok',
                 'message': "That Inspiration couldn't be found!"
             }, 404
+        
+@api.post('/deleteresource')
+@token_auth.login_required
+def deleteResource():
+    data = request.json
+
+    type = data['type']
+    resource_id = data['resource_id']
+
+    if type == 'links':
+        link = Links.query.get(resource_id)
+        if link:
+            link.deleteFromDB()
+
+            return {
+                'status': 'ok',
+                'message': 'Project Link successfully deleted!'
+            }, 200
+        else:
+            return {
+                'status': 'not ok',
+                'message': "That Project Link couldn't be found!"
+            }, 404
+    
+    elif type == 'resources':
+        link = Resources.query.get(resource_id)
+        if link:
+            link.deleteFromDB()
+
+            return {
+                'status': 'ok',
+                'message': 'Helpful Resource successfully deleted!'
+            }, 200
+        else:
+            return {
+                'status': 'not ok',
+                'message': "That Resource couldn't be found!"
+            }, 404
+
+    elif type == 'inspiration':
+        link = Inspiration.query.get(resource_id)
+        if link:
+            link.deleteFromDB()
+
+            return {
+                'status': 'ok',
+                'message': 'Inspiration successfully deleted!'
+            }, 200
+        else:
+            return {
+                'status': 'not ok',
+                'message': "That Inspiration couldn't be found!"
+            }, 404
 
 @api.post('/addmeeting')
 @token_auth.login_required
@@ -387,10 +492,7 @@ def getUser(user_id):
         return {
             'status': 'ok',
             'user': user.to_dict(),
-            'project': {
-                "project_name": user.current_project.name,
-                "admin_name": admin_name
-                }
+            'project': user.current_project.to_dict()
         }
     elif user:
         return {
