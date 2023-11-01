@@ -4,7 +4,7 @@ from flask import request
 from .apiauthhelper import token_auth
 
 
-@api.post('/creatproject')
+@api.post('/createproject')
 @token_auth.login_required
 def createProject():
     data = request.json
@@ -50,15 +50,22 @@ def createProject():
         user.saveToDB()
 
         # Pre-poplulate some links for 'em!
-        initial_links = ["Figma", "GitHub", "Trello", "Google Drive", "Discord/Slack", "Meeting"]
+        initial_links = ["Design File", "Repository", "Project Management", "Project Files", "Communication", "Meeting"]
 
         for title in initial_links:
-            new_link = Links(project_id= projectsaved.id, title=title, link="Add your link here!")
+            new_link = Links(project_id= projectsaved.id, title=title, content="Click to Enter")
             new_link.saveToDB()
 
         # Pre-populate sample 'Helpful Resource' and 'Inspiration' links
-        new_resource = Resources(project_id= projectsaved.id, title="Sample Resource", content="Add a link here!")
-        new_resource.saveToDB()
+        resources = ["Resource 1", "Resource 2", "Resource 3", "Resource 4"]
+        for resource in resources:
+            new_resource = Resources(project_id= projectsaved.id, title=resource, content="Click to Enter")
+            new_resource.saveToDB()
+
+        inspirations = ["Inspiration 1", "Inspiration 2", "Inspiration 3", "Inspiration 4"]
+        for inspiration in inspirations:
+            new_inspo = Inspiration(project_id= projectsaved.id, title=inspiration, content="Click to Enter")
+            new_inspo.saveToDB()
 
         return {
             'status': 'ok',

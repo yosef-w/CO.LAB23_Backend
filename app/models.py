@@ -276,7 +276,7 @@ class Links(db.Model):
     def __init__(self, project_id, title, content):
         self.project_id = project_id
         self.title = title
-        self.link = content
+        self.content = content
 
     def saveToDB(self):
         db.session.add(self)
@@ -323,7 +323,16 @@ class Inspiration(db.Model):
             "title": self.title,
             "content": self.content
         }
+    
+# Association table for User<->Projects many-to-many relationship to track a user's past projects
+user_projects_association = db.Table('user_projects_association',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('project_id', db.Integer, db.ForeignKey('projects.id')),
+    db.metadata
+)
 
 
 # After all model classes are defined, add the relationships that refer to later models.
 User.todos = db.relationship('ToDo', secondary=todos_users, back_populates='users', lazy='joined')  # Many-to-many with Todo
+User.past_projects = db.relationship('Projects', secondary=user_projects_association, lazy='dynamic', backref=db.backref('past_users', lazy='dynamic'))
+
