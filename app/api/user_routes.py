@@ -109,10 +109,9 @@ def addProjectUser():
     # Add user to the project
     user.current_project_id = project.id
     user.saveToDB()
-
     return {
         'status': 'ok',
-        'message': 'User added to project successfully',
+        'message': f"You've been successfully to ${project.name}!",
         'project': project.to_dict(),
         #Sending back the user data as well to update current_project_id on the front end
         'user': user.to_dict()
@@ -129,7 +128,7 @@ def removeProjectUser(user_id):
         user.saveToDB()
         return {
             'status': 'ok',
-            'message': "User successfully removed from project."
+            'message': "You've been successfully removed from your current project."
         }
         
 
