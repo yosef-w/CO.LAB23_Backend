@@ -59,13 +59,21 @@ def createProject():
         # Pre-populate sample 'Helpful Resource' and 'Inspiration' links
         resources = ["Resource 1", "Resource 2", "Resource 3", "Resource 4"]
         for resource in resources:
-            new_resource = Resources(project_id= projectsaved.id, title=resource, content="Click to Enter")
+            new_resource = Resources(project_id = projectsaved.id, title=resource, content="Click to Enter")
             new_resource.saveToDB()
 
         inspirations = ["Inspiration 1", "Inspiration 2", "Inspiration 3", "Inspiration 4"]
         for inspiration in inspirations:
-            new_inspo = Inspiration(project_id= projectsaved.id, title=inspiration, content="Click to Enter")
+            new_inspo = Inspiration(project_id = projectsaved.id, title = inspiration, content="Click to Enter")
             new_inspo.saveToDB()
+
+        # Pre-populate some tasks
+        task1 = ToDo(project_id = projectsaved.id, title = "Monitor ‘Your Team' tab for newly joined team members.")
+        task1.notes = "Contact members in the 'Your Team' tab."
+        task1.saveToDB()
+
+        task2 = ToDo(project_id = projectsaved.id, title = "Schedule first team meeting.")
+        task2.saveToDB()
 
         return {
             'status': 'ok',
@@ -191,9 +199,44 @@ def updateTask(todo_id):
         todo.completed = True
         todo.saveToDB()
 
+        def sortItem(item):
+            return item.id
+    
+        # Sort tasks so the most recent is first
+        project_todos.sort(key=sortItem, reverse=True)
+
         return {
             'status': 'ok',
             'message': 'Task successfully marked as complete!',
+            'tasks': [task.to_dict() for task in project_todos]
+        }
+    else:
+        return {
+            'status': 'not ok',
+            'message': "Task not found. Refresh the page and try again."
+        }
+    
+@api.post('/undotask/<int:task_id>')
+@token_auth.login_required
+def undoTask(task_id):
+    task = ToDo.query.get(task_id)
+
+    if task:
+        task.completed = False
+        task.saveToDB()
+
+        project_id = task.project_id
+        project_todos = ToDo.query.filter_by(project_id=project_id).all()
+
+        def sortItem(item):
+            return item.id
+    
+        # Sort tasks so the most recent is first
+        project_todos.sort(key=sortItem, reverse=True)
+
+        return {
+            'status': 'ok',
+            'message': 'Task successfully marked as incomplete!',
             'tasks': [task.to_dict() for task in project_todos]
         }
     else:

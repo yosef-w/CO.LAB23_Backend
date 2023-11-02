@@ -109,11 +109,28 @@ def logInAPI(user):
     user_project = Projects.query.filter_by(id=user.current_project_id).first()
     
     if user_project:
+
+        def sortItem(item):
+            return item.id
+        
+        resources = user_project.resources
+        links = user_project.links
+        inspiration = user_project.inspiration
+    
+        # Sort so the most recent is first
+        resources.sort(key=sortItem, reverse=True)
+        links.sort(key=sortItem, reverse=True)
+        inspiration.sort(key=sortItem, reverse=True)
+
         return {
                 'status': 'ok',
                 'message': 'Login successful!',
                 'user': user.to_dict(),
-                'project': user_project.to_dict()
+                'project': user_project.to_dict(),
+                'project_team': [member.to_dict() for member in user_project.members],
+                'project_resources': [resource.to_dict() for resource in resources],
+                'project_links': [link.to_dict() for link in links],
+                'project_inspiration': [inspiration.to_dict() for inspiration in inspiration]
             }, 201
     else:
         return {
