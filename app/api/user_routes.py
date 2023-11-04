@@ -111,7 +111,7 @@ def addProjectUser():
     if user.current_project_id != None:
         return {
             'status': 'not ok',
-            'message': "It looks like you're already involved in another project! Leave or complete that project before joining another one."
+            'message': "It looks like you're already involved in another project! Leave or complete that project before joining a new one."
         }, 401
 
     # Add user to the project
