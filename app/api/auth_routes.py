@@ -1,5 +1,5 @@
 from . import api
-from ..models import User, Projects, ToDo
+from ..models import User, Projects, ToDo, Notifications
 from flask import request
 from werkzeug.security import check_password_hash
 from .apiauthhelper import basic_auth_required, token_auth_required, basic_auth, token_auth
@@ -118,9 +118,14 @@ def logInAPI(user):
         inspiration = user_project.inspiration
     
         # Sort so the most recent is first
-        resources.sort(key=sortItem, reverse=True)
-        links.sort(key=sortItem, reverse=True)
-        inspiration.sort(key=sortItem, reverse=True)
+        resources.sort(key=sortItem)
+        links.sort(key=sortItem)
+        inspiration.sort(key=sortItem)
+
+        notifications = Notifications.query.filter_by(user_id= user.id, seen = False).all()
+        for notification in notifications:
+            notification.seen = True
+            notification.saveToDB()
 
         return {
                 'status': 'ok',
@@ -130,7 +135,8 @@ def logInAPI(user):
                 'project_team': [member.to_dict() for member in user_project.members],
                 'project_resources': [resource.to_dict() for resource in resources],
                 'project_links': [link.to_dict() for link in links],
-                'project_inspiration': [inspiration.to_dict() for inspiration in inspiration]
+                'project_inspiration': [inspiration.to_dict() for inspiration in inspiration],
+                'notifications': [notification.to_dict() for notification in notifications] if notifications else None
             }, 201
     else:
         return {

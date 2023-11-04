@@ -1,5 +1,5 @@
 from . import api
-from ..models import User, Projects, ToDo, Resources, Meetings, Links, Inspiration
+from ..models import User, Projects, ToDo, Resources, Meetings, Links, Inspiration, Notifications
 from flask import request
 from .apiauthhelper import token_auth
 
@@ -105,18 +105,25 @@ def addProjectUser():
         return {
             'status': 'not ok',
             'message': 'User or project not found.'
-        }, 400
+        }, 404
 
     # Check if the user is already part of another project
     if user.current_project_id != None:
         return {
             'status': 'not ok',
-            'message': "It looks like you're already involved in another project!"
-        }, 400
+            'message': "It looks like you're already involved in another project! Leave or complete that project before joining another one."
+        }, 401
 
     # Add user to the project
     user.current_project_id = project.id
     user.saveToDB()
+    members = project.members
+    for member in members:
+        if member.id != user.id:
+            notification = Notifications(user_id=member.id, content= f'{user.first_name} {user.last_name} has been added to your project!')
+            notification.saveToDB()
+        else:
+            pass
     return {
         'status': 'ok',
         'message': f"You've been successfully to ${project.name}!",
@@ -133,11 +140,13 @@ def removeProjectUser(user_id):
 
     if user:
         user.current_project_id = None
+        if user.is_admin == True:
+            user.is_admin = False
         user.saveToDB()
         return {
             'status': 'ok',
             'message': "You've been successfully removed from your current project."
-        }
+        }, 200
         
 
 
@@ -176,7 +185,6 @@ def deleteTask(task_id):
     if task:
         task.deleteFromDB()
         tasks = ToDo.query.filter_by(project_id=project_id).all()
-        print(tasks)
         return {
             'status': 'ok',
             'message': 'Task successfully deleted!',

@@ -42,6 +42,7 @@ class User(db.Model, UserMixin):
     is_admin = db.Column(db.Boolean, unique=False, default=False)
     current_project_id = db.Column(db.Integer, db.ForeignKey('projects.id', use_alter=True, name='fk_user_projects'), nullable=True)  # Foreign key to the project
     current_project = db.relationship("Projects", foreign_keys=[current_project_id], back_populates="members", lazy='joined')
+    notifications = db.relationship('Notifications', backref='user')
 
     def __init__(self, first_name, last_name, email, password):
         self.first_name = first_name
@@ -325,6 +326,33 @@ class Inspiration(db.Model):
             "id": self.id,
             "project_id": self.project_id,
             "title": self.title,
+            "content": self.content
+        }
+    
+class Notifications(db.Model):
+    __tablename__ = "notifications"
+
+    id = db.Column(db.Integer, primary_key=True, unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    content = db.Column(db.String(500))
+    seen = db.Column(db.Boolean, unique=False, default=False)
+
+    def __init__(self, user_id, content):
+        self.user_id = user_id
+        self.content = content
+
+    def saveToDB(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def deleteFromDB(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
             "content": self.content
         }
     
