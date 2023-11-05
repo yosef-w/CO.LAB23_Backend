@@ -84,6 +84,7 @@ class User(db.Model, UserMixin):
             "design_skills": self.design_skills,
             "developer_skills": self.developer_skills,
             "management_skills": self.management_skills,
+            "other_skills": self.other_skills,
             "wanted_skills": self.wanted_skills,
             "is_admin": self.is_admin,
             "current_project_id": self.current_project_id
@@ -355,6 +356,12 @@ class Notifications(db.Model):
             "user_id": self.user_id,
             "content": self.content
         }
+    
+    def notifyUsers(message):
+        users = User.query.all()
+        for user in users:
+            notification = Notifications(user.id, message)
+            notification.saveToDB()
     
 # Association table for User<->Projects many-to-many relationship to track a user's past projects
 user_projects_association = db.Table('user_projects_association',

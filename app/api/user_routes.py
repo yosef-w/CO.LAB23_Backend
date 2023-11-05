@@ -185,6 +185,13 @@ def deleteTask(task_id):
     if task:
         task.deleteFromDB()
         tasks = ToDo.query.filter_by(project_id=project_id).all()
+
+        def sortItem(item):
+            return item.id
+    
+        # Sort meetings and tasks so the most recent is first
+        tasks.sort(key=sortItem, reverse=True)
+        
         return {
             'status': 'ok',
             'message': 'Task successfully deleted!',

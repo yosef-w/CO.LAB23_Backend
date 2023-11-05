@@ -51,6 +51,7 @@ def signUpAPI():
     developer_skills = data["skillsTools"]["developerSkills"]
     management_skills = data["skillsTools"]["managementSkills"]
     wanted_skills = data["skillsTools"]["wantedSkills"]
+    other_skills = data["skillsTools"]["otherSkills"]
 
     #Checks if user already exists, just in case!
     user = User.query.filter_by(email = email).first()
@@ -83,6 +84,7 @@ def signUpAPI():
     user.design_skills = design_skills
     user.developer_skills = developer_skills
     user.management_skills = management_skills
+    user.other_skills = other_skills
     user.wanted_skills = wanted_skills
 
     # Finalize and save User creation to database
