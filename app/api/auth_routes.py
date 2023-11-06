@@ -33,7 +33,7 @@ def signUpAPI():
     password = data["personalForm"]['password']
 
     prev_role = data["professionalBackground"]["previousRole"]
-    prev_exp = data["professionalBackground"]["yearsOfExperience"]
+    # prev_exp = data["professionalBackground"]["yearsOfExperience"]
     mentor = data["professionalBackground"]["isMentor"]
     prod_role = data["professionalBackground"]["productRole"]
     prod_exp = data["professionalBackground"]["productExperience"]
@@ -67,7 +67,7 @@ def signUpAPI():
     #Adds remaining User column data to new User from JSON data
     # google uid (user.uid) should be involved somehow
     user.prev_role = prev_role
-    user.prev_exp = prev_exp
+    # user.prev_exp = prev_exp
     user.mentor = mentor
     user.prod_role = prod_role
     user.prod_exp = prod_exp
