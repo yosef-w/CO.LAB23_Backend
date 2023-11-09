@@ -20,7 +20,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(75), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=True)
     prev_role = db.Column(db.String(100))
-    prev_exp = db.Column(db.String(100))
+    prev_exp = db.Column(db.String(100)) # NOT NEEDED
     mentor = db.Column(db.Boolean, default=False)
     prod_role = db.Column(db.String(100))
     prod_exp = db.Column(db.String(100))
@@ -107,9 +107,9 @@ class Projects(db.Model):
     looking_for = db.Column(db.String(500))
     complete = db.Column(db.Boolean, unique=False, default=False)
     team_size = db.Column(db.Integer)
-    need_pm = db.Column(db.Boolean, unique=False, default=True)
-    need_designer = db.Column(db.Boolean, unique=False, default=True)
-    need_dev = db.Column(db.Boolean, unique=False, default=True)
+    need_pm = db.Column(db.Boolean, unique=False, default=True) # NOT NEEDED
+    need_designer = db.Column(db.Boolean, unique=False, default=True) # NOT NEEDED
+    need_dev = db.Column(db.Boolean, unique=False, default=True) # NOT NEEDED
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
     pms_wanted = db.Column(db.Integer)
     devs_wanted = db.Column(db.Integer)

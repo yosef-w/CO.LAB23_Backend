@@ -53,13 +53,13 @@ def signUpAPI():
     wanted_skills = data["skillsTools"]["wantedSkills"]
     other_skills = data["skillsTools"]["otherSkills"]
 
-    #Checks if user already exists, just in case!
-    user = User.query.filter_by(email = email).first()
-    if user:
-        return {
-            'status': 'not ok',
-            'message': 'A user with that email already exists. Please choose a different email to use.'
-        }, 400
+    # #Checks if user already exists, just in case!
+    # user = User.query.filter_by(email = email).first()
+    # if user:
+    #     return {
+    #         'status': 'not ok',
+    #         'message': 'A user with that email already exists. Please choose a different email to use.'
+    #     }, 400
     
     #Creates new User instance
     user = User(first_name, last_name, email, password)
@@ -95,7 +95,7 @@ def signUpAPI():
     if user_check:
         return {
             'status': 'ok',
-            'message': 'Account successfully created!',
+            'message': 'Account successfully created! Welcome to TeamUp!',
             'user': user.to_dict()
         }, 201
     else:

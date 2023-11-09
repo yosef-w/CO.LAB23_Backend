@@ -15,7 +15,10 @@ def createProject():
     duration = data['duration']
     industries = data['industries']
     looking_for = data['looking_for']
-    team = data['team_needed']
+    managers_needed = data['managersNeeded']
+    designers_needed = data['designersNeeded']
+    developers_needed = data['developersNeeded']
+    # team = data['team_needed']
 
     user = User.query.get(admin_id)
     if user.current_project_id != None:
@@ -33,12 +36,15 @@ def createProject():
     project = Projects(admin_id=admin_id, name=project_name, description=description, duration=duration, industries=industries, looking_for=looking_for)
 
     # Adresses what roles the project needs. Default values in db are True
-    if team['productManager'] == False:
-        project.need_pm = False
-    if team['productDesigner'] == False:
-        project.need_designer = False
-    if team['developer1'] == False and team['developer2'] == False:
-        project.need_dev = False
+    # if team['productManager'] == False:
+    #     project.need_pm = False
+    # if team['productDesigner'] == False:
+    #     project.need_designer = False
+    # if team['developer1'] == False and team['developer2'] == False:
+    #     project.need_dev = False
+    project.pms_wanted = managers_needed
+    project.designers_wanted = designers_needed
+    project.devs_wanted = developers_needed
 
     project.saveToDB()
     #Check to see if the project saved to the database successfully
@@ -120,7 +126,7 @@ def addProjectUser():
     members = project.members
     for member in members:
         if member.id != user.id:
-            notification = Notifications(user_id=member.id, content= f'{user.first_name} {user.last_name} has been added to your project!')
+            notification = Notifications(user_id=member.id, content= f'{user.first_name} {user.last_name} has joined your project!')
             notification.saveToDB()
         else:
             pass
@@ -140,8 +146,7 @@ def removeProjectUser(user_id):
 
     if user:
         user.current_project_id = None
-        if user.is_admin == True:
-            user.is_admin = False
+        user.is_admin = False
         user.saveToDB()
         return {
             'status': 'ok',
@@ -191,7 +196,7 @@ def deleteTask(task_id):
     
         # Sort meetings and tasks so the most recent is first
         tasks.sort(key=sortItem, reverse=True)
-        
+
         return {
             'status': 'ok',
             'message': 'Task successfully deleted!',
