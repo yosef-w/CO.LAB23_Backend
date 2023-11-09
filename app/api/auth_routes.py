@@ -1,5 +1,5 @@
 from . import api
-from ..models import User, Projects, ToDo
+from ..models import User, Projects, ToDo, Notifications
 from flask import request
 from werkzeug.security import check_password_hash
 from .apiauthhelper import basic_auth_required, token_auth_required, basic_auth, token_auth
@@ -33,7 +33,7 @@ def signUpAPI():
     password = data["personalForm"]['password']
 
     prev_role = data["professionalBackground"]["previousRole"]
-    prev_exp = data["professionalBackground"]["yearsOfExperience"]
+    # prev_exp = data["professionalBackground"]["yearsOfExperience"]
     mentor = data["professionalBackground"]["isMentor"]
     prod_role = data["professionalBackground"]["productRole"]
     prod_exp = data["professionalBackground"]["productExperience"]
@@ -51,14 +51,15 @@ def signUpAPI():
     developer_skills = data["skillsTools"]["developerSkills"]
     management_skills = data["skillsTools"]["managementSkills"]
     wanted_skills = data["skillsTools"]["wantedSkills"]
+    other_skills = data["skillsTools"]["otherSkills"]
 
-    #Checks if user already exists, just in case!
-    user = User.query.filter_by(email = email).first()
-    if user:
-        return {
-            'status': 'not ok',
-            'message': 'A user with that email already exists. Please choose a different email to use.'
-        }, 400
+    # #Checks if user already exists, just in case!
+    # user = User.query.filter_by(email = email).first()
+    # if user:
+    #     return {
+    #         'status': 'not ok',
+    #         'message': 'A user with that email already exists. Please choose a different email to use.'
+    #     }, 400
     
     #Creates new User instance
     user = User(first_name, last_name, email, password)
@@ -66,7 +67,7 @@ def signUpAPI():
     #Adds remaining User column data to new User from JSON data
     # google uid (user.uid) should be involved somehow
     user.prev_role = prev_role
-    user.prev_exp = prev_exp
+    # user.prev_exp = prev_exp
     user.mentor = mentor
     user.prod_role = prod_role
     user.prod_exp = prod_exp
@@ -83,6 +84,7 @@ def signUpAPI():
     user.design_skills = design_skills
     user.developer_skills = developer_skills
     user.management_skills = management_skills
+    user.other_skills = other_skills
     user.wanted_skills = wanted_skills
 
     # Finalize and save User creation to database
@@ -93,7 +95,7 @@ def signUpAPI():
     if user_check:
         return {
             'status': 'ok',
-            'message': 'Account successfully created!',
+            'message': 'Account successfully created! Welcome to TeamUp!',
             'user': user.to_dict()
         }, 201
     else:
@@ -109,11 +111,34 @@ def logInAPI(user):
     user_project = Projects.query.filter_by(id=user.current_project_id).first()
     
     if user_project:
+
+        def sortItem(item):
+            return item.id
+        
+        resources = user_project.resources
+        links = user_project.links
+        inspiration = user_project.inspiration
+    
+        # Sort so the most recent is first
+        resources.sort(key=sortItem)
+        links.sort(key=sortItem)
+        inspiration.sort(key=sortItem)
+
+        notifications = Notifications.query.filter_by(user_id= user.id, seen = False).all()
+        for notification in notifications:
+            notification.seen = True
+            notification.saveToDB()
+
         return {
                 'status': 'ok',
                 'message': 'Login successful!',
                 'user': user.to_dict(),
-                'project': user_project.to_dict()
+                'project': user_project.to_dict(),
+                'project_team': [member.to_dict() for member in user_project.members],
+                'project_resources': [resource.to_dict() for resource in resources],
+                'project_links': [link.to_dict() for link in links],
+                'project_inspiration': [inspiration.to_dict() for inspiration in inspiration],
+                'notifications': [notification.to_dict() for notification in notifications] if notifications else None
             }, 201
     else:
         return {

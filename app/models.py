@@ -20,7 +20,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(75), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=True)
     prev_role = db.Column(db.String(100))
-    prev_exp = db.Column(db.String(100))
+    prev_exp = db.Column(db.String(100)) # NOT NEEDED
     mentor = db.Column(db.Boolean, default=False)
     prod_role = db.Column(db.String(100))
     prod_exp = db.Column(db.String(100))
@@ -36,11 +36,13 @@ class User(db.Model, UserMixin):
     developer_skills = db.Column(ARRAY(db.String()))
     management_skills = db.Column(ARRAY(db.String()))
     wanted_skills = db.Column(ARRAY(db.String()))
+    other_skills = db.Column(ARRAY(db.String()))
     linkedin = db.Column(db.String(100))
     github = db.Column(db.String(100))
     is_admin = db.Column(db.Boolean, unique=False, default=False)
     current_project_id = db.Column(db.Integer, db.ForeignKey('projects.id', use_alter=True, name='fk_user_projects'), nullable=True)  # Foreign key to the project
     current_project = db.relationship("Projects", foreign_keys=[current_project_id], back_populates="members", lazy='joined')
+    notifications = db.relationship('Notifications', backref='user')
 
     def __init__(self, first_name, last_name, email, password):
         self.first_name = first_name
@@ -82,6 +84,7 @@ class User(db.Model, UserMixin):
             "design_skills": self.design_skills,
             "developer_skills": self.developer_skills,
             "management_skills": self.management_skills,
+            "other_skills": self.other_skills,
             "wanted_skills": self.wanted_skills,
             "is_admin": self.is_admin,
             "current_project_id": self.current_project_id
@@ -99,15 +102,18 @@ class Projects(db.Model):
     duration = db.Column(db.String(50))
     industries = db.Column(ARRAY(db.String()))
     admin_timezone = db.Column(db.String(50))
-    description = db.Column(db.String(500), nullable=False)
+    description = db.Column(db.String(1000), nullable=False)
     hours_wk = db.Column(db.String(100))
     looking_for = db.Column(db.String(500))
     complete = db.Column(db.Boolean, unique=False, default=False)
     team_size = db.Column(db.Integer)
-    need_pm = db.Column(db.Boolean, unique=False, default=True)
-    need_designer = db.Column(db.Boolean, unique=False, default=True)
-    need_dev = db.Column(db.Boolean, unique=False, default=True)
+    need_pm = db.Column(db.Boolean, unique=False, default=True) # NOT NEEDED
+    need_designer = db.Column(db.Boolean, unique=False, default=True) # NOT NEEDED
+    need_dev = db.Column(db.Boolean, unique=False, default=True) # NOT NEEDED
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
+    pms_wanted = db.Column(db.Integer)
+    devs_wanted = db.Column(db.Integer)
+    designers_wanted = db.Column(db.Integer)
     admin_id = db.Column(db.Integer, db.ForeignKey("user.id", use_alter=True, name='fk_projects_user'), nullable=False)
     admin = db.relationship('User', foreign_keys=[admin_id], backref="created_projects", lazy='joined')
     members = db.relationship('User', foreign_keys=[User.current_project_id], back_populates="current_project", lazy='joined')
@@ -146,9 +152,9 @@ class Projects(db.Model):
             "looking_for": self.looking_for,
             "complete": self.complete,
             "team_size": len(self.members),
-            "need_pm": self.need_pm,
-            "need_designer": self.need_designer,
-            "need_dev": self.need_dev,
+            "pms_wanted": self.pms_wanted,
+            "designers_wanted": self.designers_wanted,
+            "devs_wanted": self.devs_wanted,
             "date_created": self.date_created,
             "admin_id": self.admin_id,
             "admin_name": f'{self.admin.first_name} {self.admin.last_name}'
@@ -271,12 +277,12 @@ class Links(db.Model):
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
     project = db.relationship("Projects", back_populates="links")
     title = db.Column(db.String(250), nullable=False)
-    link = db.Column(db.String(500))
+    content = db.Column(db.String(500))
 
-    def __init__(self, project_id, title, link):
+    def __init__(self, project_id, title, content):
         self.project_id = project_id
         self.title = title
-        self.link = link
+        self.content = content
 
     def saveToDB(self):
         db.session.add(self)
@@ -291,7 +297,7 @@ class Links(db.Model):
             "id": self.id,
             "project_id": self.project_id,
             "title": self.title,
-            "link": self.link
+            "content": self.content
         }
     
 class Inspiration(db.Model):
@@ -323,7 +329,49 @@ class Inspiration(db.Model):
             "title": self.title,
             "content": self.content
         }
+    
+class Notifications(db.Model):
+    __tablename__ = "notifications"
+
+    id = db.Column(db.Integer, primary_key=True, unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    content = db.Column(db.String(500))
+    seen = db.Column(db.Boolean, unique=False, default=False)
+
+    def __init__(self, user_id, content):
+        self.user_id = user_id
+        self.content = content
+
+    def saveToDB(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def deleteFromDB(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "content": self.content
+        }
+    
+    def notifyUsers(message):
+        users = User.query.all()
+        for user in users:
+            notification = Notifications(user.id, message)
+            notification.saveToDB()
+    
+# Association table for User<->Projects many-to-many relationship to track a user's past projects
+user_projects_association = db.Table('user_projects_association',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('project_id', db.Integer, db.ForeignKey('projects.id')),
+    db.metadata
+)
 
 
 # After all model classes are defined, add the relationships that refer to later models.
 User.todos = db.relationship('ToDo', secondary=todos_users, back_populates='users', lazy='joined')  # Many-to-many with Todo
+User.past_projects = db.relationship('Projects', secondary=user_projects_association, lazy='dynamic', backref=db.backref('past_users', lazy='dynamic'))
+
