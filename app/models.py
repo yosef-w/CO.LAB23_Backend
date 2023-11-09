@@ -152,9 +152,9 @@ class Projects(db.Model):
             "looking_for": self.looking_for,
             "complete": self.complete,
             "team_size": len(self.members),
-            "need_pm": self.need_pm,
-            "need_designer": self.need_designer,
-            "need_dev": self.need_dev,
+            "pms_wanted": self.pms_wanted,
+            "designers_wanted": self.designers_wanted,
+            "devs_wanted": self.devs_wanted,
             "date_created": self.date_created,
             "admin_id": self.admin_id,
             "admin_name": f'{self.admin.first_name} {self.admin.last_name}'
